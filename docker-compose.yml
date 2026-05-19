@@ -1,0 +1,19 @@
+# Open WebUI — interface para Mac, iPhone e app JARVINIS (localhost:3000)
+# Ollama roda no Mac (host); o container só serve a UI.
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: jarvinis-open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - WEBUI_NAME=JARVINIS
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - open-webui-data:/app/backend/data
+
+volumes:
+  open-webui-data:
