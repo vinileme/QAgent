@@ -4,20 +4,32 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "setup": "bash scripts/setup.sh",
+    "check:env": "node scripts/check-env.js",
+    "start": "node chat.js",
+    "start:chat": "node chat.js",
+    "start:qa": "node qa-agent.js",
+    "start:alexa": "node alexa-server.js",
+    "start:bg": "bash scripts/start-background.sh",
+    "stop:bg": "bash scripts/stop-background.sh"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@inquirer/prompts": "^8.4.3",
     "@modelcontextprotocol/sdk": "^1.28.0",
     "body-parser": "^2.2.2",
+    "chalk": "^5.6.2",
     "dotenv": "^17.4.2",
     "duck-duck-scrape": "^2.2.7",
     "express": "^5.2.1",
+    "figlet": "^1.11.0",
     "googlethis": "^1.8.0",
-    "html-pdf-node": "^1.0.8"
+    "html-pdf-node": "^1.0.8",
+    "ora": "^9.4.0"
   },
   "devDependencies": {
     "jest": "^30.4.2"

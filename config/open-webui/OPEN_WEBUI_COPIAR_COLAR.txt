@@ -1,0 +1,22 @@
+# Cole no Open WebUI (Admin → Functions / Pipelines)
+# NÃO use $JARVINIS_ROOT no terminal — use o caminho completo abaixo.
+
+# --- FRENTE 1: CHAT (recomendado — pipe com variáveis user_id e prompt) ---
+bash /Users/ovinileme/Documents/Repo/Personal/antigravity-qa-agent/config/open-webui/jarvinis-chat.pipe.sh
+
+# --- FRENTE 1: alternativa one-liner ---
+node /Users/ovinileme/Documents/Repo/Personal/antigravity-qa-agent/chat.js --json --session "{{user_id}}" "{{prompt}}"
+
+# --- No terminal Mac (após: source ~/.zshrc) ---
+# jarvinis chat
+# chat --json --session teste "sua pergunta"
+
+
+# --- FRENTE 2: QA (primeira mensagem = caminho do repositório) ---
+JARVINIS_QA_AUTONOMOUS=1 bash /Users/ovinileme/Documents/Repo/Personal/antigravity-qa-agent/config/open-webui/jarvinis-qa.pipe.sh
+
+# One-liner alternativo (1ª mensagem):
+node /Users/ovinileme/Documents/Repo/Personal/antigravity-qa-agent/qa-agent.js --json --session "{{user_id}}" --autonomous "{{prompt}}"
+
+# Continuação QA (mensagens seguintes):
+node /Users/ovinileme/Documents/Repo/Personal/antigravity-qa-agent/qa-agent.js --json --session "{{user_id}}" "{{prompt}}"

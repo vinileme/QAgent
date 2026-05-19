@@ -2,6 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import util from 'util';
+import {
+    bootstrapSandbox,
+    ensureSandboxReady,
+    getRecommendedTestCommand,
+} from './lib/sandbox-bootstrap.js';
 
 const execPromise = util.promisify(exec);
 
@@ -82,7 +87,14 @@ export async function writeSandboxFile(basePath, relativeFilePath, content) {
         }
 
         fs.writeFileSync(fullPath, content);
-        return `SUCESSO: Arquivo salvo em qa_sandbox/${relativeFilePath}`;
+
+        const boot = await bootstrapSandbox(basePath);
+        const cmd = getRecommendedTestCommand(basePath);
+        let extra = '';
+        if (boot.message) extra += `\n${boot.message}`;
+        extra += `\nComando sugerido para [EXECUTE_TEST]: ${cmd}`;
+
+        return `SUCESSO: Arquivo salvo em qa_sandbox/${relativeFilePath}${extra}`;
     } catch (error) {
         return `ERRO ao escrever arquivo: ${error.message}`;
     }
@@ -97,12 +109,31 @@ export async function executeTestCommand(basePath, command) {
         return `ERRO: Diretório qa_sandbox não encontrado. Grave um teste primeiro.`;
     }
 
+    const ready = await ensureSandboxReady(basePath);
+    let setupNote = '';
+    if (ready.bootstrap?.message) setupNote += `\n[SETUP] ${ready.bootstrap.message}`;
+    if (ready.install?.success) setupNote += `\n[SETUP] ${ready.install.message}`;
+    if (ready.install?.success === false) {
+        setupNote += `\n[SETUP AVISO] ${ready.install.message}`;
+    }
+
+    const runCommand =
+        command === 'npm test' || command === 'npm run test'
+            ? ready.testCommand || command
+            : command;
+
     try {
-        const { stdout, stderr } = await execPromise(command, { cwd: sandboxDir, timeout: 60000 });
+        const { stdout, stderr } = await execPromise(runCommand, {
+            cwd: sandboxDir,
+            timeout: 120000,
+            env: { ...process.env, NODE_ENV: 'test' },
+        });
         console.log(`✅ Execução concluída com sucesso.`);
-        return `EXIT_CODE: 0\n\nSTDOUT:\n${stdout}\n\nSTDERR:\n${stderr}`;
+        return `EXIT_CODE: 0${setupNote}\n\nSTDOUT:\n${stdout}\n\nSTDERR:\n${stderr}`;
     } catch (error) {
         console.log(`❌ Execução falhou (Self-Healing ativado).`);
-        return `EXIT_CODE: ${error.code}\n\nSTDOUT:\n${error.stdout}\n\nSTDERR:\n${error.stderr}\n\nERROR_MSG:\n${error.message}`;
+        return `EXIT_CODE: ${error.code}${setupNote}\n\nSTDOUT:\n${error.stdout || ''}\n\nSTDERR:\n${error.stderr || ''}\n\nERROR_MSG:\n${error.message}`;
     }
 }
+
+export { getRecommendedTestCommand, ensureSandboxReady, bootstrapSandbox };

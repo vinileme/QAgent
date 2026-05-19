@@ -1,8 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { getOllamaHost } from './lib/config.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -40,7 +38,7 @@ app.post('/alexa', async (req, res) => {
 
             try {
                 // Envia a pergunta para o Ollama (Nosso Cérebro)
-                const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
+                const ollamaResponse = await fetch(`${getOllamaHost()}/api/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -95,6 +93,6 @@ function buildAlexaResponse(speechText) {
 }
 
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor da Alexa rodando na porta ${PORT}`);
-    console.log(`Aguardando o túnel do Ngrok...`);
+    console.log(`\n🚀 Servidor da Alexa rodando na porta ${PORT}`);
+    console.log(`📡 Aguardando o túnel do Ngrok para interações de voz...\n`);
 });
